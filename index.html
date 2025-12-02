@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeal College Chatbot with Complaint System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a4f8b, #3a7cbd);
+            color: #2d3e50;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #1a4f8b, #2a5f9e);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 50px;
+            width: 50px;
+            margin-right: 15px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: white;
+            padding: 5px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background: white;
+            border-top-left-radius: 4px;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #3a7cbd;
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input:focus {
+            border-color: #3a7cbd;
+        }
+        
+        .send-button {
+            width: 50px;
+            height: 50px;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .send-button:hover {
+            background: #e55a2b;
+            transform: scale(1.05);
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: #f0f4f8;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .suggestion-chip {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .suggestion-chip:hover {
+            background: #3a7cbd;
+            color: white;
+            border-color: #3a7cbd;
+            transform: translateY(-2px);
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            align-self: flex-start;
+            margin-bottom: 5px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #888;
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: typingAnimation 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .quick-reply {
+            background: rgba(58, 124, 189, 0.1);
+            border: 1px solid rgba(58, 124, 189, 0.3);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-reply:hover {
+            background: rgba(58, 124, 189, 0.2);
+        }
+        
+        /* Complaint form styles */
+        .complaint-form {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .complaint-form h3 {
+            margin-bottom: 10px;
+            color: #1a4f8b;
+        }
+        
+        .complaint-form input,
+        .complaint-form textarea,
+        .complaint-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .complaint-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .complaint-form button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .complaint-form button:hover {
+            background: #e55a2b;
+        }
+        
+        /* Admin dashboard styles */
+        .admin-dashboard {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .admin-toggle {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .admin-panel {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            width: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .admin-panel h2 {
+            color: #1a4f8b;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .complaint-item {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ddd;
+        }
+        
+        .complaint-item.urgent {
+            border-left-color: #ff6b35;
+            background: #fff5f0;
+        }
+        
+        .complaint-item.normal {
+            border-left-color: #3a7cbd;
+        }
+        
+        .complaint-item.suggestion {
+            border-left-color: #28a745;
+        }
+        
+        .complaint-category {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: white;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        
+        .category-urgent {
+            background: #ff6b35;
+        }
+        
+        .category-normal {
+            background: #3a7cbd;
+        }
+        
+        .category-suggestion {
+            background: #28a745;
+        }
+        
+        .complaint-date {
+            font-size: 0.7rem;
+            color: #777;
+            margin-top: 5px;
+        }
+        
+        .complaint-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .complaint-actions button {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .btn-resolve {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f0f4f8;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1a4f8b;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        /* Welcome screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            background: #f5f7fa;
+            border-radius: 10px;
+            margin: 10px;
+        }
+        
+        .welcome-screen h2 {
+            color: #1a4f8b;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-screen p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        /* Message formatting */
+        .message-content {
+            white-space: pre-line;
+        }
+        
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Filter controls */
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-btn {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .filter-btn.active {
+            background: #3a7cbd;
+            color: white;
+            border-color: #3a7cbd;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                height: 95vh;
+                width: 95%;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+            
+            .logo h1 {
+                font-size: 1.2rem;
+            }
+            
+            .suggestions {
+                padding: 10px;
+            }
+            
+            .suggestion-chip {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+            
+            .admin-panel {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div style="width: 50px; height: 50px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                    <i class="fas fa-graduation-cap" style="font-size: 24px; color: #1a4f8b;"></i>
+                </div>
+                <h1>Zeal College Chat Assistant</h1>
+            </div>
+            <div class="status">
+                <i class="fas fa-circle" style="color: #28a745;"></i> Online
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <!-- Welcome screen -->
+                <div class="welcome-screen">
+                    <h2>Welcome to Zeal College Support</h2>
+                    <p>Hi there! I'm your virtual assistant. How can I help you today?</p>
+                </div>
+            </div>
+            
+            <div class="suggestions">
+                <div class="suggestion-chip" onclick="sendSuggestion('Admission process')">Admission process</div>
+                <div class="suggestion-chip" onclick="sendSuggestion('Courses offered')">Courses offered</div>
+                <div class="suggestion-chip" onclick="sendSuggestion('Campus facilities')">Campus facilities</div>
+                <div class="suggestion-chip" onclick="sendSuggestion('Lodge a complaint')">Lodge a complaint</div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" id="userInput" class="chat-input" placeholder="Type your question here..." onkeypress="handleKeyPress(event)">
+                <button class="send-button" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-dashboard">
+        <button class="admin-toggle" onclick="toggleAdminPanel()">
+            <i class="fas fa-cog"></i> Admin
+            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+        </button>
+        <div class="admin-panel" id="adminPanel">
+            <h2>Complaint Management Dashboard</h2>
+            
+            <div class="filter-controls">
+                <button class="filter-btn active" onclick="filterComplaints('all')">All</button>
+                <button class="filter-btn" onclick="filterComplaints('urgent')">Urgent</button>
+                <button class="filter-btn" onclick="filterComplaints('normal')">Normal</button>
+                <button class="filter-btn" onclick="filterComplaints('suggestion')">Suggestions</button>
+                <button class="filter-btn" onclick="filterComplaints('unresolved')">Unresolved</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalComplaints">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="urgentComplaints">0</div>
+                    <div class="stat-label">Urgent</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="resolvedComplaints">0</div>
+                    <div class="stat-label">Resolved</div>
+                </div>
+            </div>
+            
+            <div id="complaintsList">
+                <!-- Complaints will be listed here -->
+            </div>
+        </div>
+        <a href="2.html">
+            <button onclick="buttonClicked()" style="
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            ">Keyword List</button>
+        </a>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const adminPanel = document.getElementById('adminPanel');
+        const complaintsList = document.getElementById('complaintsList');
+        const totalComplaints = document.getElementById('totalComplaints');
+        const urgentComplaints = document.getElementById('urgentComplaints');
+        const resolvedComplaints = document.getElementById('resolvedComplaints');
+        const notificationBadge = document.getElementById('notificationBadge');
+        
+        // Assistant identity
+        const assistantName = "ZealBot";
+        let currentFilter = 'all';
+        let welcomeScreenRemoved = false;
+        
+        // College information database
+        const collegeInfo = {
+            greeting: `Hi! I'm ${assistantName}, your Zeal College Chat Assistant. I can help with admissions, courses, events, hostel, placements, fees, complaints, and campus life — ask me anything!`,
+            
+            admission: `🎓 I can guide you through admissions. Generally admissions start in May–June. For B.Tech you may need MHT CET or JEE scores; for M.Tech it's usually GATE; for MBA CET/CAT/MAT. I can walk you through step-by-step — do you want eligibility, important dates, or documents required?`,
+            
+            courses: `📚 I can list courses. Zeal offers B.Tech branches like CSE, IT, AI & DS, AIML, E&TC, Mechanical, Civil, Electrical; M.Tech (Design Engg, Computer Engg), MBA, and Ph.D. I can also suggest electives or compare branches if you'd like.`,
+            
+            facilities: `🏫 I can tell you about campus facilities: smart classrooms, dedicated AI/ML and robotics labs, central library with e-resources, innovation center, sports grounds, gym, cafeteria, transport, and campus-wide Wi-Fi. Want photos or timings for any facility?`,
+            
+            hostel: `🏠 I can help with hostel info. We have separate hostels for boys & girls — Wi-Fi, mess (veg & non-veg), laundry, recreation rooms, and 24/7 security. Hostel allotment is generally based on availability and distance. Want the hostel rules or application steps?`,
+            
+            events: `🎉 I know about events — Zealicon (tech + cultural fest), Zeal Drag (BAJA/Mechanical), hackathons, workshops, sports week, and guest lectures. I can tell you how to participate or share the event calendar if it's available.`,
+            
+            complaints: `📝 You can lodge complaints about hostel issues, classroom problems, or facility maintenance. I'll categorize them as urgent, normal, or suggestions. Please describe your issue in detail.`,
+            
+            contact: `📞 Want to reach someone? Here's the official contact I have:\nZeal College of Engineering & Research, Narhe, Pune — 411041\nPhone: +91 20 6720 6000\nEmail: info@zealedu.com\nWebsite: https://www.zealedu.com\nIf you'd like, I can prepare a short email template for you to send.`,
+            
+            location: `📍 I can give directions — the campus is in Narhe, Pune (about 12 km from Pune Railway Station). Public transport and cabs are available. Want nearby PG suggestions or travel times from a particular landmark?`,
+            
+            fees: `💰 I can give an overview of fees and scholarships. Approx annual fee (B.Tech) ~ ₹1,20,000. Scholarships: EBC, TFWS, merit-based, and government schemes. I can prepare a checklist of documents if you want to apply for scholarships.`,
+            
+            placement: `💼 I can share placement info. The Training & Placement cell arranges campus drives — average placement ~85%. Recruiters include TCS, Infosys, Wipro, Accenture and startups. Average package ~₹4-5 LPA, top packages vary. Want tips to prepare for placements?`,
+            
+            default: `🤔 I didn't catch that. I can help with admissions, courses, events, hostel, placements, fees, complaints, or campus life. Ask me anything — I'm ${assistantName}!`
+        };
+        
+        // Complaint categories and keywords for AI classification
+        const complaintCategories = {
+            urgent: ['leak', 'flood', 'broken', 'emergency', 'danger', 'electrical', 'fire', 'accident', 'injured', 'urgent', 'critical', 'immediate', 'unsafe', 'hazard'],
+            normal: ['maintenance', 'clean', 'repair', 'not working', 'issue', 'problem', 'faulty', 'damaged', 'not functioning', 'malfunction'],
+            suggestion: ['suggestion', 'improve', 'better', 'recommend', 'advice', 'idea', 'enhance', 'improvement', 'feedback', 'opinion']
+        };
+        
+        // Complaint types
+        const complaintTypes = {
+            hostel: ['hostel', 'room', 'mess', 'food', 'warden', 'laundry', 'accommodation', 'dormitory'],
+            classroom: ['classroom', 'projector', 'desk', 'chair', 'blackboard', 'whiteboard', 'lecture', 'teaching'],
+            facility: ['facility', 'lab', 'library', 'sports', 'gym', 'ground', 'canteen', 'washroom', 'toilet', 'bathroom', 'restroom']
+        };
+        
+        // Store complaints
+        let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+        
+        // Quick replies for different responses
+        const quickReplies = {
+            admission: ['Eligibility criteria', 'Important dates', 'Required documents'],
+            courses: ['B.Tech branches', 'M.Tech specializations', 'MBA program'],
+            facilities: ['Library timings', 'Lab facilities', 'Sports facilities'],
+            hostel: ['Hostel fees', 'Application process', 'Hostel rules'],
+            placement: ['Top recruiters', 'Placement preparation', 'Internship opportunities'],
+            complaint: ['Hostel issue', 'Classroom problem', 'Facility maintenance']
+        };
+        
+        // Initialize with bot greeting
+        window.onload = function() {
+            setTimeout(() => {
+                addMessage(collegeInfo.greeting, 'bot');
+            }, 1000);
+            updateComplaintsDashboard();
+        };
+        
+        // Toggle admin panel
+        function toggleAdminPanel() {
+            adminPanel.style.display = adminPanel.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // Filter complaints
+        function filterComplaints(filter) {
+            currentFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateComplaintsDashboard();
+        }
+        
+        // Update complaints dashboard
+        function updateComplaintsDashboard() {
+            // Filter complaints based on current filter
+            let filteredComplaints = complaints;
+            
+            if (currentFilter === 'urgent') {
+                filteredComplaints = complaints.filter(c => c.priority === 'urgent');
+            } else if (currentFilter === 'normal') {
+                filteredComplaints = complaints.filter(c => c.priority === 'normal');
+            } else if (currentFilter === 'suggestion') {
+                filteredComplaints = complaints.filter(c => c.priority === 'suggestion');
+            } else if (currentFilter === 'unresolved') {
+                filteredComplaints = complaints.filter(c => !c.resolved);
+            }
+            
+            // Update stats
+            totalComplaints.textContent = complaints.length;
+            urgentComplaints.textContent = complaints.filter(c => c.priority === 'urgent').length;
+            resolvedComplaints.textContent = complaints.filter(c => c.resolved).length;
+            
+            // Update notification badge
+            const unresolvedUrgent = complaints.filter(c => c.priority === 'urgent' && !c.resolved).length;
+            if (unresolvedUrgent > 0) {
+                notificationBadge.style.display = 'flex';
+                notificationBadge.textContent = unresolvedUrgent;
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+            
+            // Clear complaints list
+            complaintsList.innerHTML = '';
+            
+            if (filteredComplaints.length === 0) {
+                complaintsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #777;">No complaints found</div>';
+                return;
+            }
+            
+            // Sort complaints: urgent first, then normal, then suggestions
+            const sortedComplaints = [...filteredComplaints].sort((a, b) => {
+                const priorityOrder = { urgent: 0, normal: 1, suggestion: 2 };
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            });
+            
+            // Add complaints to list
+            sortedComplaints.forEach((complaint, index) => {
+                const complaintItem = document.createElement('div');
+                complaintItem.className = `complaint-item ${complaint.priority}`;
+                
+                const categoryClass = `category-${complaint.priority}`;
+                
+                complaintItem.innerHTML = `
+                    <span class="complaint-category ${categoryClass}">${complaint.priority}</span>
+                    <div><strong>Type:</strong> ${complaint.type}</div>
+                    <div><strong>Description:</strong> ${complaint.description}</div>
+                    <div class="complaint-date"><strong>Submitted:</strong> ${new Date(complaint.date).toLocaleString()}</div>
+                    ${complaint.resolved ? 
+                        `<div style="color: #28a745; margin-top: 5px;"><strong>RESOLVED</strong></div>` : 
+                        `<div class="complaint-actions">
+                            <button class="btn-resolve" onclick="resolveComplaint(${complaints.indexOf(complaint)})">Mark Resolved</button>
+                            <button class="btn-delete" onclick="deleteComplaint(${complaints.indexOf(complaint)})">Delete</button>
+                         </div>`
+                    }
+                `;
+                
+                complaintsList.appendChild(complaintItem);
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('complaints', JSON.stringify(complaints));
+        }
+        
+        // Resolve a complaint
+        function resolveComplaint(index) {
+            complaints[index].resolved = true;
+            updateComplaintsDashboard();
+        }
+        
+        // Delete a complaint
+        function deleteComplaint(index) {
+            if (confirm('Are you sure you want to delete this complaint?')) {
+                complaints.splice(index, 1);
+                updateComplaintsDashboard();
+            }
+        }
+        
+        // Handle Enter key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // Send message from input field
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+            
+            addMessage(message, 'user');
+            userInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Process after a short delay to simulate thinking
+            setTimeout(() => {
+                processMessage(message);
+            }, 1000);
+        }
+        
+        // Send message from suggestion chip
+        function sendSuggestion(suggestion) {
+            userInput.value = suggestion;
+            sendMessage();
+        }
+        
+        // Add message to chat
+        function addMessage(message, sender) {
+            // Remove welcome screen if it's the first message
+            if (!welcomeScreenRemoved) {
+                const welcomeScreen = document.querySelector('.welcome-screen');
+                if (welcomeScreen) {
+                    welcomeScreen.remove();
+                }
+                welcomeScreenRemoved = true;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            // Format message with line breaks
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = message;
+            messageDiv.appendChild(messageContent);
+            
+            // Add timestamp
+            const timeSpan = document.createElement('div');
+            timeSpan.className = 'message-time';
+            timeSpan.textContent = getCurrentTime();
+            messageDiv.appendChild(timeSpan);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Get current time for message timestamp
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        // Add quick reply buttons
+        function addQuickReplies(type) {
+            if (!quickReplies[type]) return;
+            
+            const quickReplyContainer = document.createElement('div');
+            quickReplyContainer.className = 'quick-replies';
+            
+            quickReplies[type].forEach(reply => {
+                const replyButton = document.createElement('div');
+                replyButton.className = 'quick-reply';
+                replyButton.textContent = reply;
+                replyButton.onclick = () => sendSuggestion(reply);
+                quickReplyContainer.appendChild(replyButton);
+            });
+            
+            chatMessages.appendChild(quickReplyContainer);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Show complaint form
+        function showComplaintForm() {
+            const formHtml = `
+                <div class="complaint-form" id="complaintForm">
+                    <h3>Lodge a Complaint</h3>
+                    <select id="complaintType">
+                        <option value="">Select complaint type</option>
+                        <option value="hostel">Hostel Issue</option>
+                        <option value="classroom">Classroom Problem</option>
+                        <option value="facility">Facility Maintenance</option>
+                        <option value="other">Other Issue</option>
+                    </select>
+                    <textarea id="complaintDescription" placeholder="Please describe your issue in detail..."></textarea>
+                    <button onclick="submitComplaint()">Submit Complaint</button>
+                </div>
+            `;
+            
+            addMessage("Please fill out the complaint form:", 'bot');
+            
+            const formContainer = document.createElement('div');
+            formContainer.innerHTML = formHtml;
+            chatMessages.appendChild(formContainer);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Submit complaint
+        function submitComplaint() {
+            const typeSelect = document.getElementById('complaintType');
+            const descriptionTextarea = document.getElementById('complaintDescription');
+            
+            const type = typeSelect.value;
+            const description = descriptionTextarea.value.trim();
+            
+            if (!type || !description) {
+                addMessage("Please fill out all fields in the complaint form.", 'bot');
+                return;
+            }
+            
+            // Classify complaint priority using AI
+            const priority = classifyComplaint(description);
+            
+            // Create complaint object
+            const complaint = {
+                type: type.charAt(0).toUpperCase() + type.slice(1),
+                description,
+                priority,
+                date: new Date().toISOString(),
+                resolved: false
+            };
+            
+            // Add to complaints array
+            complaints.push(complaint);
+            
+            // Update dashboard
+            updateComplaintsDashboard();
+            
+            // Remove form
+            document.getElementById('complaintForm').remove();
+            
+            addMessage(`Thank you for your feedback. Your ${priority} priority complaint has been submitted and will be addressed soon.`, 'bot');
+        
+            addQuickReplies('complaint');
+        }
+        
+        // AI-based complaint classification
+        function classifyComplaint(description) {
+            const lowerDesc = description.toLowerCase();
+            let score = { urgent: 0, normal: 0, suggestion: 0 };
+            
+            // Check for urgent keywords
+            complaintCategories.urgent.forEach(keyword => {
+                if (lowerDesc.includes(keyword)) score.urgent++;
+            });
+            
+            // Check for normal keywords
+            complaintCategories.normal.forEach(keyword => {
+                if (lowerDesc.includes(keyword)) score.normal++;
+            });
+            
+            // Check for suggestion keywords
+            complaintCategories.suggestion.forEach(keyword => {
+                if (lowerDesc.includes(keyword)) score.suggestion++;
+            });
+            
+            // Determine priority based on scores
+            if (score.urgent > 0) return 'urgent';
+            if (score.normal > 0) return 'normal';
+            if (score.suggestion > 0) return 'suggestion';
+            
+            // Default to normal if no keywords matched
+            return 'normal';
+        }
+        
+        // Process user message and generate response
+        function processMessage(message) {
+            let responseType = 'default';
+            let response = '';
+            message = message.toLowerCase();
+            
+            // Remove typing indicator
+            removeTypingIndicator();
+            
+            // Determine response based on keywords
+            if (message.includes('admission') || message.includes('apply') || message.includes('admit')) {
+                response = collegeInfo.admission;
+                responseType = 'admission';
+            } else if (message.includes('course') || message.includes('program') || message.includes('degree') || message.includes('branch')) {
+                response = collegeInfo.courses;
+                responseType = 'courses';
+            } else if (message.includes('facility') || message.includes('campus') || message.includes('infrastructure')) {
+                response = collegeInfo.facilities;
+                responseType = 'facilities';
+            } else if (message.includes('hostel') || message.includes('pg') || message.includes('accommodation')) {
+                response = collegeInfo.hostel;
+                responseType = 'hostel';
+            } else if (message.includes('event') || message.includes('fest') || message.includes('celebration')) {
+                response = collegeInfo.events;
+            } else if (message.includes('complaint') || message.includes('problem') || message.includes('issue') || message.includes('grievance')) {
+                response = collegeInfo.complaints;
+                showComplaintForm();
+            } else if (message.includes('contact') || message.includes('where') || message.includes('address') || message.includes('phone')) {
+                response = collegeInfo.contact;
+            } else if (message.includes('location') || message.includes('place') || message.includes('nearby')) {
+                response = collegeInfo.location;
+            } else if (message.includes('fee') || message.includes('scholarship') || message.includes('cost') || message.includes('tfws')) {
+                response = collegeInfo.fees;
+            } else if (message.includes('placement') || message.includes('job') || message.includes('package') || message.includes('company')) {
+                response = collegeInfo.placement;
+                responseType = 'placement';
+            } else if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                response = `Hey! I'm ${assistantName}. How can I help you about Zeal College today?`;
+            } else {
+                response = collegeInfo.default;
+            }
+            
+            addMessage(response, 'bot');
+            
+            // Add quick replies if applicable
+            if (responseType !== 'default') {
+                addQuickReplies(responseType);
+            }
+        }
+    </script>
+</body>
+</html>
